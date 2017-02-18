@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">BookCatalog</string>
+    <string name="author_tv">Автор:</string>
+    <string name="description_final">Описание:</string>
+</resources>
