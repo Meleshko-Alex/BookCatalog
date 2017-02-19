@@ -2,4 +2,8 @@
     <string name="app_name">BookCatalog</string>
     <string name="author_tv">Автор:</string>
     <string name="description_final">Описание:</string>
+    <string name="download_and_save">Скачать и сохранить</string>
+    <string name="no_connect">Нет соединения с сетью!</string>
+    <string name="check_and_try">Проверьте соединение и попытайтесь снова.</string>
+    <string name="check_and_restart">Проверьте соединение и запустите приложение снова</string>
 </resources>

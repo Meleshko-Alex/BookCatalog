@@ -35,6 +35,7 @@ public class DetailActivity extends Activity {
 
         Picasso.with(this)
                 .load(url + mBookData.getLink())
+                .placeholder(R.drawable.no_image)
                 .into(book_image);
     }
 }
