@@ -6,4 +6,5 @@
     <string name="no_connect">Нет соединения с сетью!</string>
     <string name="check_and_try">Проверьте соединение и попытайтесь снова.</string>
     <string name="check_and_restart">Проверьте соединение и запустите приложение снова</string>
+    <string name="isDownloading">Файл загружен</string>
 </resources>

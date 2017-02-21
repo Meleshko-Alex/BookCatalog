@@ -37,5 +37,6 @@ public class DetailActivity extends Activity {
                 .load(url + mBookData.getLink())
                 .placeholder(R.drawable.no_image)
                 .into(book_image);
+
     }
 }

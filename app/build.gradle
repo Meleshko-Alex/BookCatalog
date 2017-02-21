@@ -31,4 +31,6 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.1.1'
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'co.roverlabs:picasso:2.5.2'
+    compile 'com.artjimlop:altex-image-downloader:0.0.4'
+    compile 'com.github.kevinsawicki:http-request:6.0'
 }

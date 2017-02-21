@@ -1,17 +1,30 @@
 package edu.example.bookcatalog.ui.activities;
 
+import android.Manifest;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.github.kevinsawicki.http.HttpRequest;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -54,7 +67,6 @@ public class MainActivity extends BaseActivity {
         mCoordinatorLayout = (CoordinatorLayout)findViewById(R.id.coordinator_layout);
         mToolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-
     }
 
     class ParsePage extends AsyncTask<Void, Void, ArrayList<BookModel>>{
@@ -114,13 +126,34 @@ public class MainActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_settings:
-                loadAndSaveFile();
+                downloadFile();
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void loadAndSaveFile() {
+    /**
+     * Загрузка и сохранение картинки с сервера, а также провека и запрос Runtime Rermissions для
+     * корректной работы на Android 6
+     */
+    private void downloadFile() {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
 
+            checkNetworkConnected();
+            DownloadAsyncTask dat = new DownloadAsyncTask();
+            dat.execute();
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    ConstantManager.CAMERA_REQUEST_PERMISSION_CODE);
+
+            Snackbar.make(mCoordinatorLayout, "Для корректной работу необходимо дать требуемые разрешения", Snackbar.LENGTH_LONG)
+                    .setAction("Разрешить", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            openApplicationSettings();
+                        }
+                    }).show();
+        }
     }
 
     /**
@@ -152,12 +185,44 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-
     /**
      * Пповеряем получили ли мы данны с сети
      * @return true - получили,  false - нет
      */
     private boolean isBookListReceived(){
         return booksList != null && booksList.size() > 0;
+    }
+
+    public void openApplicationSettings(){
+        Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:" + getPackageName()));
+        startActivityForResult(appSettingsIntent, ConstantManager.PERMISSION_REQUEST_SETTINGS_CODE);
+    }
+
+    class DownloadAsyncTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            String url = "https://itense.group/download?id=101";
+            String response = HttpRequest.get(url).header("Content-Disposition");
+            String fileName = response.substring(response.indexOf("=") + 1, response.length());
+
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+            request.setDescription("Downloading file, please wait...");
+            request.setTitle("Downloading file");
+            request.allowScanningByMediaScanner();
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+
+            DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+            manager.enqueue(request);
+
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            Snackbar.make(mCoordinatorLayout, R.string.isDownloading, Snackbar.LENGTH_LONG).show();
+        }
     }
 }
