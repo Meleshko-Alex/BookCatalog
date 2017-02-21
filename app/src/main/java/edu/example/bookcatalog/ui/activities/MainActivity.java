@@ -136,9 +136,9 @@ public class MainActivity extends BaseActivity {
      * корректной работы на Android 6
      */
     private void downloadFile() {
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+        if((ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+        && checkNetworkConnected() == true){
 
-            checkNetworkConnected();
             DownloadAsyncTask dat = new DownloadAsyncTask();
             dat.execute();
         } else {
@@ -157,9 +157,10 @@ public class MainActivity extends BaseActivity {
     }
 
     /**
-     * Проверяем есть ли соединение с сетью, если нет, то выводим диалог
+     * Проверяем есть ли соединение с сетью, если нет, то выводим диалог и возвращаем false
      */
-    private void checkNetworkConnected() {
+    private boolean checkNetworkConnected() {
+        boolean isConnect;
         String mMessage ;
         if(isBookListReceived()){
             mMessage = getString(R.string.check_and_try);
@@ -176,13 +177,18 @@ public class MainActivity extends BaseActivity {
                             new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    if(isBookListReceived()) dialog.cancel();
+                                    if(isBookListReceived()){
+                                        dialog.cancel();
+                                    }
                                     else finish();
                                 }
                             });
             AlertDialog alert = builder.create();
             alert.show();
-        }
+            isConnect = false;
+        } else isConnect = true;
+
+        return isConnect;
     }
 
     /**
@@ -199,6 +205,9 @@ public class MainActivity extends BaseActivity {
         startActivityForResult(appSettingsIntent, ConstantManager.PERMISSION_REQUEST_SETTINGS_CODE);
     }
 
+    /**
+     * В отдельном потоке парсим из заголовка ответа имя передаваемого файла и скачиваем его
+     */
     class DownloadAsyncTask extends AsyncTask<Void, Void, Void> {
 
         @Override
